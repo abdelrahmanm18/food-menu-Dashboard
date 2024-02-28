@@ -8,8 +8,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.use(express.static("upload"));
 
-// const cors = require('cors');
-// app.use(cors());
+const cors = require('cors');
+app.use(cors());
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
