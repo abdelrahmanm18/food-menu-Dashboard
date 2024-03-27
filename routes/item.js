@@ -87,7 +87,6 @@ router.post(
         subcategoriesID: req.body.subcategoriesID,
       };
 
-      console.log(req.file);
       const query = util.promisify(conn.query).bind(conn);
       await query('insert into items set ?', item);
       res.status(200).json(req.file);
@@ -119,7 +118,6 @@ router.put(
       const query = util.promisify(conn.query).bind(conn);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log(errors);
         return res.status(400).json({ errors: errors.array() });
       }
 
@@ -145,8 +143,6 @@ router.put(
         itemObj.image_url = req.file.filename;
         fs.unlinkSync('./upload/' + item[0].image_url);
       }
-
-      console.log(itemObj);
 
       await query('update items set ? where id = ?', [itemObj, item[0].id]);
 
@@ -189,7 +185,6 @@ router.delete('/:id', async (req, res) => {
       msg: 'item deleted successfully',
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json(error);
   }
 });
@@ -230,21 +225,41 @@ router.get('', async (req, res) => {
   const items = await check(condition, queryName);
 
   for (const item of items) {
-    console.log(item);
     const getObjectsParams = {
       Bucket: bucketName,
       Key: item.image_url,
     };
-    console.log(getObjectsParams);
     const command = new GetObjectCommand(getObjectsParams);
     const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
     item.image_url = url;
+    console.log(url, item.image_url);
   }
 
   // items.map((item) => {
   //   item.image_url = 'http://' + req.hostname + ':4000/' + item.image_url;
   // });
   res.status(200).json(items);
+});
+
+router.get('/:id', async (req, res) => {
+  const query = util.promisify(conn.query).bind(conn);
+  const item = await query('select * from items where id = ?', [req.params.id]);
+  if (!item[0]) {
+    res.status(404).json({
+      msg: 'item not found !!',
+    });
+  }
+
+  const getObjectsParams = {
+    Bucket: bucketName,
+    Key: item[0]?.image_url,
+  };
+
+  const command = new GetObjectCommand(getObjectsParams);
+  const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+  item[0].image_url = url;
+
+  res.status(200).json(item);
 });
 
 module.exports = router;
