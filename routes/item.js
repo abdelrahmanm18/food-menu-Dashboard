@@ -26,10 +26,9 @@ const s3 = new S3Client({
     secretAccessKey: secretAccessKey,
   },
 });
-const randomImageName = (bytes = 32) =>
-  crypto.randomBytes(bytes).toString('hex');
 
-const imageName = randomImageName();
+const randomImageName = (bytes = 16) =>
+  crypto.randomBytes(bytes).toString('hex');
 
 //create item
 
@@ -68,6 +67,9 @@ router.post(
           ],
         });
       }
+
+      const imageName = randomImageName();
+
       const bucketParams = {
         Bucket: bucketName,
         Key: imageName,
@@ -89,7 +91,7 @@ router.post(
 
       const query = util.promisify(conn.query).bind(conn);
       await query('insert into items set ?', item);
-      res.status(200).json(req.file);
+      res.status(200).json(item);
     } catch (err) {
       res.status(500).json(err);
       console.log(err);
