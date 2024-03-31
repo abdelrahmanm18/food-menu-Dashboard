@@ -142,8 +142,27 @@ router.put(
       };
 
       if (req.file) {
-        itemObj.image_url = req.file.filename;
-        fs.unlinkSync('./upload/' + item[0].image_url);
+        const deletedImageparams = {
+          Bucket: bucketName,
+          Key: item[0].image_url,
+        };
+
+        const deleteCommand = new DeleteObjectCommand(deletedImageparams);
+        await s3.send(deleteCommand);
+
+        const imageName = randomImageName();
+
+        const bucketParams = {
+          Bucket: bucketName,
+          Key: imageName,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype,
+        };
+
+        const putCommand = new PutObjectCommand(bucketParams);
+        await s3.send(putCommand);
+
+        itemObj.image_url = imageName;
       }
 
       await query('update items set ? where id = ?', [itemObj, item[0].id]);
