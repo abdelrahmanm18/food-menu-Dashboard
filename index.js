@@ -24,6 +24,8 @@ const auth = require('./routes/Auth');
 const items = require('./routes/item');
 const categories = require('./routes/categories');
 const subCategories = require('./routes/subCategories');
+const events = require('./routes/events');
+const offers = require('./routes/offers');
 
 app.listen(PORT, HOST, () => {
   console.log('server is running');
@@ -33,5 +35,7 @@ app.use('/auth', auth);
 app.use('/items', items);
 app.use('/categories', categories);
 app.use('/subCategories', subCategories);
+app.use('/events', events);
+app.use('/offers', offers);
 
 module.exports = app;
